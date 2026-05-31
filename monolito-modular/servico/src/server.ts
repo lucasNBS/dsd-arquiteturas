@@ -1,5 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import { paymentRoutes } from "./modules/pagamento/routes/payment";
+
 
 const app = Fastify({
   logger: true,
@@ -11,6 +13,8 @@ app.get("/health", async () => {
   };
 });
 
+app.register(paymentRoutes);
+
 const start = async () => {
   try {
     await app.listen({
@@ -18,7 +22,7 @@ const start = async () => {
       host: "0.0.0.0",
     });
 
-    console.log("Server running on port 8080");
+    console.log("Server running on port" + process.env.PORT);
   } catch (err) {
     app.log.error(err);
     process.exit(1);
