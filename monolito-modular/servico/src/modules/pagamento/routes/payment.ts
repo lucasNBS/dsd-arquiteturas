@@ -1,10 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { PostgresPaymentRepository } from "../repositories/payment";
-import { PaymentService } from "../services/payment";
+import { paymentService } from "../../../container/index";
 import { createPaymentSchema } from "../schemas/payment";
 
 const paymentRepository = new PostgresPaymentRepository();
-const paymentService = new PaymentService(paymentRepository);
 
 export async function paymentRoutes(app: FastifyInstance) {
   app.post("/payments", async (request, reply) => {
