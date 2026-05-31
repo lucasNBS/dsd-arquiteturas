@@ -2,6 +2,7 @@ import "dotenv/config";
 import Fastify from "fastify";
 
 import { cardapioRoutes } from "./cardapio/cardapio.routes";
+import { pedidoRoutes } from "./pedido/pedido.routes";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -17,6 +18,10 @@ app.get("/health", async () => {
 
 app.register(cardapioRoutes, {
   prefix: "/cardapio",
+});
+
+app.register(pedidoRoutes, {
+  prefix: "/pedidos",
 });
 
 const PORT = Number(process.env.PORT) || 8080;
