@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { db } from "../shared/database/connection";
+import { db } from "../../shared/database/connection";
 import { createOrderSchema } from "./pedido.schemas";
 
 export type CreateOrderDTO = z.infer<typeof createOrderSchema>;

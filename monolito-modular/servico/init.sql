@@ -40,3 +40,19 @@ CREATE TABLE IF NOT EXISTS pedido.order_items (
     FOREIGN KEY (menu_item_id)
     REFERENCES cardapio.menu_items(id)
 );
+
+CREATE TABLE IF NOT EXISTS pagamento.payments (
+    id UUID PRIMARY KEY,
+    order_id UUID NOT NULL,
+    amount NUMERIC(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS notificacao.notifications (
+    id UUID PRIMARY KEY,
+    order_id UUID NOT NULL,
+    payment_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);

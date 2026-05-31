@@ -1,8 +1,9 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import { paymentRoutes } from "./modules/pagamento/routes/payment";
 
-import { cardapioRoutes } from "./cardapio/cardapio.routes";
-import { pedidoRoutes } from "./pedido/pedido.routes";
+import { cardapioRoutes } from "./modules/cardapio/cardapio.routes";
+import { pedidoRoutes } from "./modules/pedido/pedido.routes";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -23,6 +24,8 @@ app.register(cardapioRoutes, {
 app.register(pedidoRoutes, {
   prefix: "/pedidos",
 });
+
+app.register(paymentRoutes);
 
 const PORT = Number(process.env.PORT) || 8080;
 

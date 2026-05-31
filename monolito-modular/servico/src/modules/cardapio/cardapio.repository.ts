@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { db } from "../shared/database/connection";
+import { db } from "../../shared/database/connection";
 
 import {
   createMenuItemSchema,
