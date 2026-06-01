@@ -4,6 +4,7 @@ import { paymentRoutes } from "./modules/pagamento/routes/payment";
 
 import { cardapioRoutes } from "./modules/cardapio/cardapio.routes";
 import { pedidoRoutes } from "./modules/pedido/pedido.routes";
+import { notificationRoutes } from "./modules/notificacao/routes/notification";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -26,6 +27,8 @@ app.register(pedidoRoutes, {
 });
 
 app.register(paymentRoutes);
+
+app.register(notificationRoutes)
 
 const PORT = Number(process.env.PORT) || 8080;
 

@@ -10,22 +10,6 @@ import { CardapioService } from "../modules/cardapio/cardapio.service";
 import { PedidoRepository } from "../modules/pedido/pedido.repository";
 import { PedidoService } from "../modules/pedido/pedido.service";
 
-const notificationsRepository =
-  new PostgresNotificationsRepository();
-
-const notificationsService =
-  new NotificationsService(
-    notificationsRepository
-  );
-
-const paymentsRepository =
-  new PostgresPaymentRepository();
-
-const paymentService =
-  new PaymentService(
-    paymentsRepository,
-    notificationsService
-  );
 
 const cardapioRepository =
   new CardapioRepository();
@@ -43,6 +27,25 @@ const pedidoService =
     pedidoRepository
   );
 
+const notificationsRepository =
+  new PostgresNotificationsRepository();
+
+const notificationsService =
+  new NotificationsService(
+    notificationsRepository,
+    pedidoService
+  );
+
+const paymentsRepository =
+  new PostgresPaymentRepository();
+
+const paymentService =
+  new PaymentService(
+    paymentsRepository,
+    notificationsService,
+    pedidoService
+  );
+  
 export {
   paymentService,
   notificationsService,

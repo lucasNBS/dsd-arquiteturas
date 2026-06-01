@@ -1,11 +1,13 @@
 import { PaymentFacade } from "../contracts/facade";
 import { NotificationFacade } from "../../notificacao/contracts/facade";
+import { OrderFacade } from "../../pedido/contracts/facade"
 import { CreatePaymentDTO, PaymentRepository } from "../repositories/payment";
 import { Payment } from "../types/payment";
 
 export class PaymentService implements PaymentFacade{
   constructor(private repository: PaymentRepository,
-    private notificationFacade: NotificationFacade
+    private notificationFacade: NotificationFacade,
+    private orderFacade: OrderFacade
   ) {}
   
 
@@ -26,6 +28,8 @@ export class PaymentService implements PaymentFacade{
     await this.repository.save(payment);
 
     await this.notificationFacade.notifyOrderPaid(payment.orderId, payment.id);
+
+    await this.orderFacade.markAsPreparing(payment.orderId);
 
     return payment;
   }
