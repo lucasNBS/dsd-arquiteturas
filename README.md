@@ -47,6 +47,8 @@ Avaliar o esforço necessário para realizar uma modificação simples de negóc
 
 #### Microsserviços
 
+Modificação relativamente simples, exigindo alterações em grande parte dos arquivos no serviço de pedidos, como o modelo, tipagem, repositório e API. Apesar disso, os demais serviços do sistema não precisam ser alterados tendo em vista que não há a necessidade de conhecerem o atributo em questão. A arquitetura de microsserviços ajuda a isolar modificações pontuais no módulo de pedidos, facilitando a manutenção do sistema e integração entre suas partes.
+
 Descrever:
 
 - Impacto da mudança.
@@ -65,6 +67,8 @@ Avaliar comportamento do sistema diante de falhas em um componente crítico.
 #### Monólito Modular
 
 #### Microsserviços
+
+No contexto da arquitetura de microsserviços, uma falha no serviço de pagamentos, apesar de ser grave e comprometer a operação do sistema não impossibilita o seu uso. Pedidos ainda podem ser feitos, itens ainda podem ser adicionados ao cardápio e, a princípio, notificações ainda podem ser geradas. O modelo de microsserviços faz com que os serviços operem em conjunto, mas isolados em seus próprios contextos, fazendo com que uma falha local não comprometa todo o funcionamento do sistema.
 
 Responder:
 
@@ -85,6 +89,8 @@ Avaliar comportamento sob carga.
 
 #### Microsserviços
 
+Fazendo com que cada parte do sistema opere de maneira independente, a arquitetura em microsserviços é a ideal em cenários nos quais escalabilidade seja necessária. A carga de 50 requisições simultâneas não se mostra um gargalo para a aplicação, sendo executada em um período de alguns milissegundos, mesmo considerando que o endpoint em questão se comunica com os serviços de cardapio e pagamento.
+
 Descrever:
 
 - Gargalos identificados.
@@ -102,6 +108,8 @@ Descrever:
 
 #### Microsserviços
 
+Por conta de sua natureza distribuída, rastrear o fluxo de uma operação em um sistema dividido em serviços se torna uma operação um pouco mais complexa, exigindo consultar todos os serviços por onde o fluxo "passa". Isso torna a experiência de encontrar erros um pouco mais difícil tendo em vista as possíveis falhas na comunicação entre os serviços de forma que se torna complexo encontrar exatamente onde o erro acontece.
+
 Responder:
 
 - Quantos logs precisaram ser consultados?
@@ -118,6 +126,10 @@ Responder:
 ### Monólito Modular
 
 ### Microsserviços
+
+Apesar de escalável e manutenível, a arquitetura de microsserviços é também complexa, levando em conta a necessidade de gerenciar e coordenar cada um de seus serviços de maneira independente. Por conta disso, sua complexidade inicial e custo de operação são altos, sendo idealmente utilizado em casos onde a escalabilidade é essencial.
+
+Apesar disso, esta arquitetura também apresenta como parte de suas vantagems o baixo acoplamento entre os elementos do sistema de forma que ele possa, como um todo, evoluir conforme a necessidade, enquanto cada um de seus serviços pode ser escalado de acordo com a carga que recebem e mantidos de forma isolado dos demais. Adicionalmente, falhas pontuais em um de seus serviços também acabam sendo menos severas, considerando que o resto do sistema pode continuar operando ainda que de forma limitada, embora, ao mesmo tempo, isso também acabe dificultando, por vezes, encontrar a origem de um bug no fluxo do sistema.
 
 Descrever:
 
@@ -170,23 +182,17 @@ Analisar:
 
 ### Monólito
 
-Indicado para:
-
 - MVPs
 - Sistemas pequenos
 - Equipes reduzidas
 
 ### Monólito Modular
 
-Indicado para:
-
 - Sistemas em crescimento
 - Equipes médias
 - Projetos que podem migrar para microsserviços futuramente
 
 ### Microsserviços
-
-Indicado para:
 
 - Grandes sistemas
 - Equipes independentes
