@@ -73,9 +73,9 @@ GET http://localhost:3003/notification - Visualizar notificações
 
 ## Fluxo de Execução
 
-. Criar itens no menu
-. Criar pedido com os itens disponíveis no menu
-. Pagar pagamento referente ao pedido
+- Criar itens no menu
+- Criar pedido com os itens disponíveis no menu
+- Pagar pagamento referente ao pedido
 
 ## Experimentos
 
