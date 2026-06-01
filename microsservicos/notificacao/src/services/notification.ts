@@ -11,4 +11,12 @@ export class NotificationsService {
   async create(data: CreateNotificationDTO) {
     return await this.notificationsRepository.create(data);
   }
+
+  async list() {
+    return await this.notificationsRepository.findAll();
+  }
+
+  async findByPaymentId(id: string) {
+    return await this.notificationsRepository.findByPaymentId(id);
+  }
 }

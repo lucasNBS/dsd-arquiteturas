@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Notification {
+  id String @id @default(uuid())
+  paymentId String
+  orderId String
+  createdAt DateTime @default(now())
+}

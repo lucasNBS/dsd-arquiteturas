@@ -1,3 +1,4 @@
+import { rabbitMQ } from "../lib/rabbitmq";
 import { CreatePaymentDTO, PaymentRepository } from "../repositories/payment";
 import { Payment } from "../types/payment";
 
@@ -6,6 +7,10 @@ export class PaymentService {
 
   async createPayment(data: CreatePaymentDTO): Promise<Payment> {
     return await this.repository.create(data);
+  }
+
+  async list(): Promise<Payment[]> {
+    return await this.repository.findAll();
   }
 
   async markAsPaid(id: string): Promise<Payment | null> {
@@ -19,6 +24,7 @@ export class PaymentService {
     payment.updatedAt = new Date();
 
     await this.repository.save(payment);
+    rabbitMQ.publishPagamentoAprovado(payment);
 
     return payment;
   }

@@ -1,15 +1,9 @@
-export type OrderStatus = "PENDING" | "CANCELED";
-
-export interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
+export type OrderStatus = "PENDING" | "CANCELLED";
 
 export interface Order {
   id: string;
   table: number;
-  items: OrderItem[];
+  items: string[];
   status: OrderStatus;
   createdAt: Date;
 }

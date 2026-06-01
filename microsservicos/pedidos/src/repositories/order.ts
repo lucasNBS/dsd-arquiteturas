@@ -1,3 +1,4 @@
+import { db } from "../lib/db";
 import { createOrderSchema } from "../schemas/order";
 import { Order } from "../types/order";
 import { z } from "zod";
@@ -11,36 +12,42 @@ export interface OrdersRepository {
   save(order: Order): Promise<void>;
 }
 
-export class InMemoryOrdersRepository implements OrdersRepository {
-  private orders: Order[] = [];
-
-  async create(data: CreateOrderDTO) {
-    const order: Order = {
-      id: crypto.randomUUID(),
-      table: data.table,
-      items: data.items,
-      status: "PENDING",
-      createdAt: new Date(),
-    };
-
-    this.orders.push(order);
-
-    return order;
+export class PrismaOrdersRepository implements OrdersRepository {
+  async create(data: CreateOrderDTO): Promise<Order> {
+    return await db.order.create({
+      data: {
+        table: data.table,
+        items: data.items,
+      },
+    });
   }
 
-  async findAll() {
-    return this.orders;
+  async findAll(): Promise<Order[]> {
+    return await db.order.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   }
 
-  async findById(id: string) {
-    const order = this.orders.find((order) => order.id === id);
-
-    return order ?? null;
+  async findById(id: string): Promise<Order | null> {
+    return await db.order.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
-  async save(order: Order) {
-    const orderIndex = this.orders.findIndex((item) => item.id === order.id);
-
-    this.orders[orderIndex] = order;
+  async save(order: Order): Promise<void> {
+    await db.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        table: order.table,
+        items: order.items,
+        status: order.status,
+      },
+    });
   }
 }

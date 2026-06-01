@@ -1,0 +1,143 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app-service:
+    build:
+      context: pedidos/
+    container_name: pedidos-service
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-service:5432/appdb
+      PORT: 3000
+    depends_on:
+      - postgres-service
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  postgres-service:
+    image: postgres:17-alpine
+    container_name: pedidos-service-postgres-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_service_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app-cardapio:
+    build:
+      context: cardapio/
+    container_name: cardapio-service
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-cardapio:5432/appdb
+      PORT: 3001
+    depends_on:
+      - postgres-cardapio
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  postgres-cardapio:
+    image: postgres:17-alpine
+    container_name: cardapio-service-postgres-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_cardapio_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app-pagamento:
+    build:
+      context: pagamento/
+    container_name: pagamento-service
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-pagamento:5432/appdb
+      PORT: 3002
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      postgres-pagamento:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  postgres-pagamento:
+    image: postgres:17-alpine
+    container_name: pagamento-service-postgres-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_pagamento_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app-notificacao:
+    build:
+      context: notificacao/
+    container_name: notificacao-service
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-notificacao:5432/appdb
+      PORT: 3003
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      postgres-notificacao:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  postgres-notificacao:
+    image: postgres:17-alpine
+    container_name: notificacao-service-postgres-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_notificacao_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_service_data:
+  postgres_cardapio_data:
+  postgres_pagamento_data:
+  postgres_notificacao_data:
+  rabbitmq_data:

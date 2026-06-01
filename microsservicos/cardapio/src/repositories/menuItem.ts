@@ -1,3 +1,5 @@
+import { Prisma } from "../generated/prisma/client";
+import { db } from "../lib/db";
 import {
   createMenuItemSchema,
   updateMenuItemSchema,
@@ -16,42 +18,61 @@ export interface MenuItemsRepository {
   delete(id: string): Promise<void>;
 }
 
-export class InMemoryMenuItemsRepository implements MenuItemsRepository {
-  private menuItems: MenuItem[] = [];
-
-  async create(data: CreateMenuItemDTO) {
-    const menuItem: MenuItem = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      description: data.description,
-      price: data.price,
-      available: data.available ?? true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.menuItems.push(menuItem);
-
-    return menuItem;
+export class PrismaMenuItemsRepository implements MenuItemsRepository {
+  async create(data: CreateMenuItemDTO): Promise<MenuItem> {
+    const item = await db.menuItem.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: new Prisma.Decimal(data.price),
+      },
+    });
+    return {
+      ...item,
+      price: item.price.toNumber()
+    }
   }
 
-  async findAll() {
-    return this.menuItems;
+  async findAll(): Promise<MenuItem[]> {
+    const items = await db.menuItem.findMany();
+    return items.map(item => {
+      return {
+        ...item,
+        price: item.price.toNumber()
+      }
+    })
   }
 
-  async findById(id: string) {
-    const item = this.menuItems.find((item) => item.id === id);
+  async findById(id: string): Promise<MenuItem | null> {
+    const item = await db.menuItem.findUnique({
+      where: { id },
+    });
 
-    return item ?? null;
+    if (!item) {
+      return null
+    }
+
+    return {
+      ...item,
+      price: item?.price.toNumber()
+    }
   }
 
-  async save(menuItem: MenuItem) {
-    const index = this.menuItems.findIndex((item) => item.id === menuItem.id);
-
-    this.menuItems[index] = menuItem;
+  async save(menuItem: MenuItem): Promise<void> {
+    await db.menuItem.update({
+      where: { id: menuItem.id },
+      data: {
+        name: menuItem.name,
+        description: menuItem.description,
+        price: menuItem.price,
+        available: menuItem.available,
+      },
+    });
   }
 
-  async delete(id: string) {
-    this.menuItems = this.menuItems.filter((item) => item.id !== id);
+  async delete(id: string): Promise<void> {
+    await db.menuItem.delete({
+      where: { id },
+    });
   }
 }

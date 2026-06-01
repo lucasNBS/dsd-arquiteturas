@@ -1,12 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { MenuItemsService } from "../services/menuItem";
-import { InMemoryMenuItemsRepository } from "../repositories/menuItem";
+import { PrismaMenuItemsRepository } from "../repositories/menuItem";
 import {
   createMenuItemSchema,
   updateMenuItemSchema,
 } from "../schemas/menuItem";
 
-const menuItemsRepository = new InMemoryMenuItemsRepository();
+const menuItemsRepository = new PrismaMenuItemsRepository();
 const menuItemsService = new MenuItemsService(menuItemsRepository);
 
 export async function menuItemsRoutes(app: FastifyInstance) {
