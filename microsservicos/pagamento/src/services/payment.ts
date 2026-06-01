@@ -8,6 +8,10 @@ export class PaymentService {
     return await this.repository.create(data);
   }
 
+  async list(): Promise<Payment[]> {
+    return await this.repository.findAll();
+  }
+
   async markAsPaid(id: string): Promise<Payment | null> {
     const payment = await this.repository.findById(id);
 

@@ -2,17 +2,28 @@ import { FastifyInstance } from "fastify";
 import { createOrderSchema } from "../schemas/order";
 import { OrdersService } from "../services/order";
 import { PrismaOrdersRepository } from "../repositories/order";
+import { MenuItemClient } from "../client/menuItem";
+import { PaymentClient } from "../client/payment";
 
 const ordersRepository = new PrismaOrdersRepository();
-const ordersService = new OrdersService(ordersRepository);
+const menuItemsClient = new MenuItemClient();
+const paymentClient = new PaymentClient();
+const ordersService = new OrdersService(
+  ordersRepository,
+  menuItemsClient,
+  paymentClient,
+);
 
 export async function ordersRoutes(app: FastifyInstance) {
   app.post("/orders", async (request, reply) => {
     const body = createOrderSchema.parse(request.body);
 
-    const order = await ordersService.create(body);
-
-    return reply.status(201).send(order);
+    try {
+      const order = await ordersService.create(body);
+      return reply.status(201).send(order);
+    } catch (err) {
+      return reply.status(500).send({ message: err.message });
+    }
   });
 
   app.get("/orders", async () => {

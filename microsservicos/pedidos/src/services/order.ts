@@ -1,10 +1,27 @@
+import { MenuClient } from "../client/menuItem";
+import { Payment } from "../client/payment";
 import { CreateOrderDTO, OrdersRepository } from "../repositories/order";
 
 export class OrdersService {
-  constructor(private readonly ordersRepository: OrdersRepository) {}
+  constructor(
+    private readonly ordersRepository: OrdersRepository,
+    private readonly menuClient: MenuClient,
+    private readonly paymentClient: Payment,
+  ) {}
 
   async create(data: CreateOrderDTO) {
-    return await this.ordersRepository.create(data);
+    try {
+      const totalPrice = await this.menuClient.getMenuItemsTotalPrice(
+        data.items,
+      );
+
+      const order = await this.ordersRepository.create(data);
+      await this.paymentClient.createPayment(totalPrice, order.id);
+
+      return order;
+    } catch (err) {
+      throw new Error("Pedido inválido");
+    }
   }
 
   async list() {

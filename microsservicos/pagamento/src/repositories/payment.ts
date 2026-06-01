@@ -11,6 +11,7 @@ export type UpdatePaymentStatusDTO = z.infer<typeof updatePaymentStatusSchema>;
 
 export interface PaymentRepository {
   create(data: CreatePaymentDTO): Promise<Payment>;
+  findAll(): Promise<Payment[]>;
   findById(id: string): Promise<Payment | null>;
   save(data: Payment): Promise<void>;
 }
@@ -25,6 +26,10 @@ export class PrismaPaymentRepository implements PaymentRepository {
     });
 
     return payment;
+  }
+
+  async findAll(): Promise<Payment[]> {
+    return await db.payment.findMany();
   }
 
   async findById(id: string): Promise<Payment | null> {

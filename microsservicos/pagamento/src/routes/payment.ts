@@ -14,6 +14,10 @@ export async function paymentRoutes(app: FastifyInstance) {
     return reply.status(201).send(payment);
   });
 
+  app.get("/payments", async () => {
+    return await paymentService.list();
+  });
+
   app.patch("/payments/:id/pay", async (request, reply) => {
     const params = request.params as { id: string };
 
