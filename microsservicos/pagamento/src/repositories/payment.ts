@@ -1,3 +1,4 @@
+import { db } from "../lib/db";
 import {
   createPaymentSchema,
   updatePaymentStatusSchema,
@@ -14,33 +15,35 @@ export interface PaymentRepository {
   save(data: Payment): Promise<void>;
 }
 
-export class InMemoryPaymentRepository implements PaymentRepository {
-  private payments: Payment[] = [];
-
+export class PrismaPaymentRepository implements PaymentRepository {
   async create(data: CreatePaymentDTO): Promise<Payment> {
-    const payment: Payment = {
-      id: crypto.randomUUID(),
-      orderId: data.orderId,
-      amount: data.amount,
-      status: "PENDING",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.payments.push(payment);
+    const payment = await db.payment.create({
+      data: {
+        orderId: data.orderId,
+        amount: data.amount,
+      },
+    });
 
     return payment;
   }
 
   async findById(id: string): Promise<Payment | null> {
-    const payment = this.payments.find((p) => p.id === id);
+    const payment = await db.payment.findUnique({
+      where: { id },
+    });
 
-    return payment ?? null;
+    return payment;
   }
 
-  async save(data: Payment) {
-    const index = this.payments.findIndex((item) => item.id === data.id);
-
-    this.payments[index] = data;
+  async save(data: Payment): Promise<void> {
+    await db.payment.update({
+      where: { id: data.id },
+      data: {
+        orderId: data.orderId,
+        amount: data.amount,
+        status: data.status,
+        updatedAt: data.updatedAt,
+      },
+    });
   }
 }

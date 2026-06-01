@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { createOrderSchema } from "../schemas/order";
 import { OrdersService } from "../services/order";
-import { InMemoryOrdersRepository } from "../repositories/order";
+import { PrismaOrdersRepository } from "../repositories/order";
 
-const ordersRepository = new InMemoryOrdersRepository();
+const ordersRepository = new PrismaOrdersRepository();
 const ordersService = new OrdersService(ordersRepository);
 
 export async function ordersRoutes(app: FastifyInstance) {

@@ -1,3 +1,4 @@
+import { db } from "../lib/db";
 import { createNotificationSchema } from "../schemas/notification";
 import { Notification } from "../types/notification";
 import { z } from "zod";
@@ -8,18 +9,14 @@ export interface NotificationsRepository {
   create(data: CreateNotificationDTO): Promise<Notification>;
 }
 
-export class InMemoryNotificationsRepository implements NotificationsRepository {
-  private notifications: Notification[] = [];
-
-  async create(data: CreateNotificationDTO) {
-    const notification: Notification = {
-      id: crypto.randomUUID(),
-      orderId: data.orderId,
-      paymentId: data.paymentId,
-      createdAt: new Date(),
-    };
-
-    this.notifications.push(notification);
+export class PrismaNotificationsRepository implements NotificationsRepository {
+  async create(data: CreateNotificationDTO): Promise<Notification> {
+    const notification = await db.notification.create({
+      data: {
+        orderId: data.orderId,
+        paymentId: data.paymentId,
+      },
+    });
 
     return notification;
   }

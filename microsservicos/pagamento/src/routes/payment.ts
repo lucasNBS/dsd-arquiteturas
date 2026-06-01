@@ -1,9 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { InMemoryPaymentRepository } from "../repositories/payment";
 import { PaymentService } from "../services/payment";
 import { createPaymentSchema } from "../schemas/payment";
+import { PrismaPaymentRepository } from "../repositories/payment";
 
-const paymentRepository = new InMemoryPaymentRepository();
+const paymentRepository = new PrismaPaymentRepository();
 const paymentService = new PaymentService(paymentRepository);
 
 export async function paymentRoutes(app: FastifyInstance) {

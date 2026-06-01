@@ -14,11 +14,11 @@ app.get("/health", async () => {
 const start = async () => {
   try {
     await app.listen({
-      port: Number(process.env.PORT) ?? 8800,
+      port: Number(process.env.PORT) ?? 3003,
       host: "0.0.0.0",
     });
 
-    console.log("Server running on port 8800");
+    console.log("Server running on port 3003");
   } catch (err) {
     app.log.error(err);
     process.exit(1);

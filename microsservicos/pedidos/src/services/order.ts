@@ -18,7 +18,7 @@ export class OrdersService {
       return null;
     }
 
-    order.status = "CANCELED";
+    order.status = "CANCELLED";
 
     await this.ordersRepository.save(order);
 

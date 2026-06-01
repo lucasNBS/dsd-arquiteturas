@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  PENDING
+  CANCELLED
+}
+
+model Order {
+  id String @id @default(uuid())
+  table Int
+  status OrderStatus @default(PENDING)
+  items String[]
+  createdAt DateTime @default(now())
+}
