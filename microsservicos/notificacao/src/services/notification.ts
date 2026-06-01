@@ -15,4 +15,8 @@ export class NotificationsService {
   async list() {
     return await this.notificationsRepository.findAll();
   }
+
+  async findByPaymentId(id: string) {
+    return await this.notificationsRepository.findByPaymentId(id);
+  }
 }

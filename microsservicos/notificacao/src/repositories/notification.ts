@@ -8,6 +8,7 @@ export type CreateNotificationDTO = z.infer<typeof createNotificationSchema>;
 export interface NotificationsRepository {
   create(data: CreateNotificationDTO): Promise<Notification>;
   findAll(): Promise<Notification[]>;
+  findByPaymentId(id: string): Promise<Notification | null>;
 }
 
 export class PrismaNotificationsRepository implements NotificationsRepository {
@@ -24,5 +25,13 @@ export class PrismaNotificationsRepository implements NotificationsRepository {
 
   async findAll(): Promise<Notification[]> {
     return await db.notification.findMany();
+  }
+
+  async findByPaymentId(id: string): Promise<Notification | null> {
+    return await db.notification.findFirst({
+      where: {
+        paymentId: id,
+      },
+    });
   }
 }
