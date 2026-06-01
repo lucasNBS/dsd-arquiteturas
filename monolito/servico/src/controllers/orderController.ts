@@ -28,19 +28,23 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
   // pelo Cardapio dentro de createOrder (acoplamento direto entre dominios).
   const lines = [];
   for (const item of body.items) {
-    if (!item.menuItemId || typeof item.quantity !== "number" || item.quantity <= 0) {
+    if (
+      !item.menuItemId ||
+      typeof item.quantity !== "number" ||
+      item.quantity <= 0
+    ) {
       return reply.status(400).send({
-        message: "Cada item precisa de 'menuItemId' (string) e 'quantity' (number > 0)",
+        message:
+          "Cada item precisa de 'menuItemId' (string) e 'quantity' (number > 0)",
       });
     }
     lines.push({ menuItemId: item.menuItemId, quantity: item.quantity });
   }
 
   try {
-    const order = createOrder({ table: body.table, items: lines });
+    const order = await createOrder({ table: body.table, items: lines });
     return reply.status(201).send(order);
   } catch (err) {
-    // Erros de validacao vindos do Cardapio (item inexistente/indisponivel).
     return reply.status(400).send({ message: (err as Error).message });
   }
 }
@@ -51,7 +55,7 @@ export async function index() {
 
 export async function show(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
-  const order = findOrderById(id);
+  const order = await findOrderById(id);
 
   if (!order) {
     return reply.status(404).send({ message: "Pedido nao encontrado" });
@@ -64,7 +68,7 @@ export async function cancel(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
 
   try {
-    const order = cancelOrder(id);
+    const order = await cancelOrder(id);
 
     if (!order) {
       return reply.status(404).send({ message: "Pedido nao encontrado" });

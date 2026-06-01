@@ -19,7 +19,7 @@ export async function pay(request: FastifyRequest, reply: FastifyReply) {
     return reply.status(400).send({ message: "Informe 'orderId'" });
   }
 
-  const order = findOrderById(body.orderId);
+  const order = await findOrderById(body.orderId);
 
   if (!order) {
     return reply.status(404).send({ message: "Pedido nao encontrado" });
@@ -31,7 +31,7 @@ export async function pay(request: FastifyRequest, reply: FastifyReply) {
       .send({ message: "Pedido cancelado nao pode ser pago" });
   }
 
-  const existing = findPaymentByOrderId(order.id);
+  const existing = await findPaymentByOrderId(order.id);
   if (existing && existing.status === "PAID") {
     return reply.status(400).send({ message: "Pedido ja foi pago" });
   }
@@ -46,7 +46,7 @@ export async function pay(request: FastifyRequest, reply: FastifyReply) {
 
   const approved = process.env.PAGAMENTO_RECUSAR !== "true";
 
-  const payment = createPayment({
+  const payment = await createPayment({
     orderId: order.id,
     amount: order.amount,
     status: approved ? "PAID" : "REFUSED",
@@ -58,9 +58,9 @@ export async function pay(request: FastifyRequest, reply: FastifyReply) {
     return reply.status(201).send(payment);
   }
 
-  markOrderAsPaid(order.id);
-  moveOrderToKitchen(order.id);
-  createNotification({
+  await markOrderAsPaid(order.id);
+  await moveOrderToKitchen(order.id);
+  await createNotification({
     orderId: order.id,
     paymentId: payment.id,
     target: "COZINHA",
@@ -72,7 +72,7 @@ export async function pay(request: FastifyRequest, reply: FastifyReply) {
 
 export async function status(request: FastifyRequest, reply: FastifyReply) {
   const { orderId } = request.params as { orderId: string };
-  const payment = findPaymentByOrderId(orderId);
+  const payment = await findPaymentByOrderId(orderId);
 
   if (!payment) {
     return reply

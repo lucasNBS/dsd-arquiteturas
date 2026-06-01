@@ -21,7 +21,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
       .send({ message: "Informe 'name' (string) e 'price' (number)" });
   }
 
-  const item = createMenuItem({
+  const item = await createMenuItem({
     name: body.name,
     description: body.description,
     price: body.price,
@@ -37,7 +37,7 @@ export async function index() {
 
 export async function show(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
-  const item = findMenuItemById(id);
+  const item = await findMenuItemById(id);
 
   if (!item) {
     return reply.status(404).send({ message: "Item nao encontrado" });
@@ -50,7 +50,7 @@ export async function update(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
   const body = request.body as Record<string, unknown>;
 
-  const item = updateMenuItem(id, body);
+  const item = await updateMenuItem(id, body);
 
   if (!item) {
     return reply.status(404).send({ message: "Item nao encontrado" });
@@ -61,7 +61,7 @@ export async function update(request: FastifyRequest, reply: FastifyReply) {
 
 export async function remove(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
-  const deleted = deleteMenuItem(id);
+  const deleted = await deleteMenuItem(id);
 
   if (!deleted) {
     return reply.status(404).send({ message: "Item nao encontrado" });

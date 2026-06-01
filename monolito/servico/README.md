@@ -2,7 +2,7 @@
 
 Sistema de Pedidos de Lanchonete implementado como **monólito** seguindo o
 padrão **MVC**: uma única aplicação, um único processo, uma única porta e um
-único banco (em memória). Os quatro domínios — **cardápio**, **pedidos**,
+único banco (PostgreSQL). Os quatro domínios — **cardápio**, **pedidos**,
 **pagamento** e **notificação** — existem como pastas de Models e Controllers,
 mas **sem fronteiras rígidas**: os controllers chamam os models de outros
 domínios **diretamente**. O acoplamento é natural e proposital — o objetivo do
@@ -19,8 +19,9 @@ trabalho é sentir o peso de cada arquitetura.
 
 - **Node.js** + **TypeScript**
 - **Fastify** (HTTP)
+- **PostgreSQL** (via lib `pg`), banco **único** para os 4 domínios —
+  configurado em `src/database.ts` e provisionado por **Docker Compose**
 - **tsx** (execução em dev) / **tsc** (build)
-- Banco **único em memória** (`src/database.ts`)
 
 ---
 
@@ -31,7 +32,7 @@ servico/
 ├── src/
 │   ├── server.ts          # App Fastify único, /health
 │   ├── routes.ts          # Roteamento: URLs -> controllers
-│   ├── database.ts        # BANCO ÚNICO em memória (todas as "tabelas")
+│   ├── database.ts        # BANCO ÚNICO Postgres (pool + criação das tabelas)
 │   ├── models/            # M — dados e acesso ao banco
 │   │   ├── menuItem.ts
 │   │   ├── order.ts
@@ -46,7 +47,7 @@ servico/
 ```
 
 - **Model (M):** funções em `models/` que leem e escrevem direto no banco único
-  (`database.ts`).
+  PostgreSQL (`database.ts`), via SQL parametrizado.
 - **Controller (C):** funções em `controllers/` que recebem a requisição HTTP,
   validam a entrada e chamam os models.
 - **View:** as respostas em **JSON** devolvidas pelos controllers.
@@ -90,17 +91,23 @@ Ciclo de vida do pedido: `PENDING → PAID → IN_KITCHEN` (ou `CANCELED`).
 
 ## Como rodar
 
-Pré-requisitos: **Node.js 20+** e `npm`.
+Pré-requisitos: **Node.js 20+**, `npm` e **Docker** (para o PostgreSQL).
 
 ```bash
 cd monolito/servico
 
 npm install        # instala dependências
+cp .env.example .env
+
+npm run db:up      # sobe o PostgreSQL via Docker Compose (porta 5436 no host)
 
 npm run dev        # desenvolvimento (hot reload)
 # ou
 npm run build && npm start   # produção
 ```
+
+O banco roda em um container (`docker compose`); a aplicação cria as tabelas
+automaticamente no boot. Para derrubar o banco depois: `npm run db:down`.
 
 A aplicação sobe em **http://localhost:3000** (configurável via `PORT`).
 
@@ -111,6 +118,10 @@ Para conferir se subiu, rode o request **`### Health check`** no arquivo
 { "status": "ok", "arquitetura": "monolito", "uptime": ... }
 ```
 
+> **Persistência:** os dados ficam no **PostgreSQL** (volume Docker
+> `lanchonete_pgdata`). Sobrevivem ao reinício do servidor **e** do container.
+> Para zerar o banco: `npm run db:down -- -v` (remove o volume).
+
 ### Variáveis de ambiente
 
 Copie o arquivo de exemplo e ajuste o que precisar (o `.env` é carregado
@@ -120,9 +131,10 @@ automaticamente na inicialização):
 cp .env.example .env
 ```
 
-| Variável             | Default | Para que serve                                              |
+| Variável             | Default | Para que serve                                             |
 |----------------------|---------|------------------------------------------------------------|
 | `PORT`               | `3000`  | Porta do servidor                                          |
+| `DATABASE_URL`       | `postgres://lanchonete:lanchonete@localhost:5436/lanchonete` | String de conexão do PostgreSQL |
 | `PAGAMENTO_LENTO`    | —       | Se `true`, o pagamento bloqueia o event loop (experimento) |
 | `PAGAMENTO_SLEEP_MS` | `5000`  | Duração do bloqueio quando `PAGAMENTO_LENTO=true`          |
 | `PAGAMENTO_RECUSAR`  | —       | Se `true`, o pagamento mock é **recusado** (testar falha)  |
@@ -239,9 +251,11 @@ load balancer. Consequências:
 - **Desperdício de recursos:** sobem-se cópias completas do sistema só para
   atender a demanda de um módulo; pagamento e notificação escalam junto sem
   precisar.
-- **Estado compartilhado vira gargalo:** aqui o estado é em memória no processo;
-  ao replicar, seria preciso extrair o estado para um banco/cache externo, senão
-  cada réplica teria dados diferentes.
+- **Banco compartilhado vira gargalo:** todas as réplicas da aplicação
+  apontariam para o **mesmo PostgreSQL**. Escalar o cardápio aumenta a carga de
+  leitura/escrita nesse banco único, que vira o ponto central de contenção —
+  exigindo réplicas de leitura, pool tuning ou, no limite, separar o schema do
+  cardápio em outro banco.
 - **Acoplamento de implantação:** qualquer mudança no cardápio exige redeploy do
   todo; não há granularidade de escala nem de deploy.
 
@@ -256,7 +270,7 @@ depois para *Microsserviços* (processo e banco independentes, escala individual
 ## Checklist da Versão 1 — Monólito
 
 - [x] Única aplicação rodando em uma porta (Fastify na `:3000`).
-- [x] Banco único com todas as "tabelas" (`src/database.ts`).
+- [x] Banco único **PostgreSQL** com todas as tabelas (persistência real, via Docker).
 - [x] Fluxo completo funcional: criar pedido → pagar → notificar cozinha.
 - [x] Endpoint de health check (`GET /health`).
 - [x] Experimento de lentidão no pagamento (sleep 5s) documentado acima.

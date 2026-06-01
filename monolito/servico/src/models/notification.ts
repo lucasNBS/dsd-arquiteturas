@@ -1,4 +1,4 @@
-import { db } from "../database";
+import { query } from "../database";
 
 export interface Notification {
   id: string;
@@ -9,12 +9,23 @@ export interface Notification {
   createdAt: Date;
 }
 
-export function createNotification(data: {
+function mapRow(row: any): Notification {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    paymentId: row.payment_id,
+    target: row.target,
+    message: row.message,
+    createdAt: new Date(row.created_at),
+  };
+}
+
+export async function createNotification(data: {
   orderId: string;
   paymentId: string;
   target: string;
   message: string;
-}): Notification {
+}): Promise<Notification> {
   const notification: Notification = {
     id: crypto.randomUUID(),
     orderId: data.orderId,
@@ -24,13 +35,25 @@ export function createNotification(data: {
     createdAt: new Date(),
   };
 
-  db.notifications.push(notification);
+  await query(
+    `INSERT INTO notifications (id, order_id, payment_id, target, message, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [
+      notification.id,
+      notification.orderId,
+      notification.paymentId,
+      notification.target,
+      notification.message,
+      notification.createdAt,
+    ],
+  );
 
   console.log(`[notificacao] >>> ${data.target}: ${data.message}`);
 
   return notification;
 }
 
-export function listNotifications(): Notification[] {
-  return db.notifications;
+export async function listNotifications(): Promise<Notification[]> {
+  const result = await query("SELECT * FROM notifications ORDER BY created_at");
+  return result.rows.map(mapRow);
 }

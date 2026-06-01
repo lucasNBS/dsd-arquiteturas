@@ -1,6 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import { routes } from "./routes";
+import { initDatabase } from "./database";
 
 const app = Fastify({
   logger: true,
@@ -18,6 +19,8 @@ app.register(routes);
 
 const start = async () => {
   try {
+    await initDatabase();
+
     const port = Number(process.env.PORT) || 3000;
 
     await app.listen({ port, host: "0.0.0.0" });
