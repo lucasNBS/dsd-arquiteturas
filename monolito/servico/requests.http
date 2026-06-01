@@ -1,0 +1,127 @@
+@host = http://localhost:3000
+
+### Health check
+GET {{host}}/health
+
+
+# CARDAPIO
+
+### Criar item (captura o id em @itemId)
+# @name criarItem
+POST {{host}}/menu-items
+Content-Type: application/json
+
+{
+  "name": "X-Burger",
+  "price": 25.5
+}
+
+###
+@itemId = {{criarItem.response.body.id}}
+
+### Criar item indisponivel 
+
+POST {{host}}/menu-items
+Content-Type: application/json
+
+{
+  "name": "Milkshake",
+  "price": 15,
+  "available": false
+}
+
+### Listar itens
+GET {{host}}/menu-items
+
+### Detalhar item
+GET {{host}}/menu-items/{{itemId}}
+
+### Atualizar item (preco / disponibilidade)
+PATCH {{host}}/menu-items/{{itemId}}
+Content-Type: application/json
+
+{
+  "price": 27.9,
+  "available": true
+}
+
+### Remover item
+# DELETE {{host}}/menu-items/{{itemId}}
+
+
+# PEDIDOS  
+
+
+### Criar pedido (captura o id em @orderId)
+# @name criarPedido
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "table": 5,
+  "items": [
+    { "menuItemId": "{{itemId}}", "quantity": 2 }
+  ]
+}
+
+###
+@orderId = {{criarPedido.response.body.id}}
+
+### Listar pedidos
+GET {{host}}/orders
+
+### Detalhar pedido (veja o status mudar ao longo do fluxo)
+GET {{host}}/orders/{{orderId}}
+
+### Cancelar pedido (bloqueado com 409 se ja estiver IN_KITCHEN)
+PATCH {{host}}/orders/{{orderId}}/cancel
+
+
+# PAGAMENTO  
+
+
+### Pagar pedido
+POST {{host}}/payments
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}"
+}
+
+### Consultar status do pagamento
+GET {{host}}/payments/{{orderId}}
+
+
+
+# NOTIFICACAO
+
+
+### Listar notificacoes enviadas a cozinha
+GET {{host}}/notifications
+
+
+
+# CASOS DE ERRO (validacao / acoplamento com o cardapio)
+
+
+### Pedido com item inexistente -> 400
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "table": 1,
+  "items": [
+    { "menuItemId": "00000000-0000-0000-0000-000000000000", "quantity": 1 }
+  ]
+}
+
+### Pedido sem quantity -> 400
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "table": 1,
+  "items": [
+    { "menuItemId": "{{itemId}}" }
+  ]
+}

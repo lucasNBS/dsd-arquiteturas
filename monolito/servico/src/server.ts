@@ -1,5 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import { routes } from "./routes";
+import { initDatabase } from "./database";
 
 const app = Fastify({
   logger: true,
@@ -8,17 +10,22 @@ const app = Fastify({
 app.get("/health", async () => {
   return {
     status: "ok",
+    arquitetura: "monolito",
+    uptime: process.uptime(),
   };
 });
 
+app.register(routes);
+
 const start = async () => {
   try {
-    await app.listen({
-      port: Number(process.env.PORT) ?? 8080,
-      host: "0.0.0.0",
-    });
+    await initDatabase();
 
-    console.log("Server running on port 8080");
+    const port = Number(process.env.PORT) || 3000;
+
+    await app.listen({ port, host: "0.0.0.0" });
+
+    console.log(`Monolito rodando na porta ${port}`);
   } catch (err) {
     app.log.error(err);
     process.exit(1);

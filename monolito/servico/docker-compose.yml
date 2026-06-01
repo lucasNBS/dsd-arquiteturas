@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lanchonete-monolito-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lanchonete
+      POSTGRES_PASSWORD: lanchonete
+      POSTGRES_DB: lanchonete
+    ports:
+      - "5436:5432"
+    volumes:
+      - lanchonete_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lanchonete -d lanchonete"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lanchonete_pgdata:
