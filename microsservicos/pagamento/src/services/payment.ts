@@ -1,3 +1,4 @@
+import { rabbitMQ } from "../lib/rabbitmq";
 import { CreatePaymentDTO, PaymentRepository } from "../repositories/payment";
 import { Payment } from "../types/payment";
 
@@ -23,6 +24,7 @@ export class PaymentService {
     payment.updatedAt = new Date();
 
     await this.repository.save(payment);
+    rabbitMQ.publishPagamentoAprovado(payment);
 
     return payment;
   }

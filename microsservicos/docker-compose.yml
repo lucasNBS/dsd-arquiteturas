@@ -1,4 +1,22 @@
 services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app-service:
     build:
       context: pedidos/
@@ -58,8 +76,12 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres-pagamento:5432/appdb
       PORT: 3002
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     depends_on:
-      - postgres-pagamento
+      postgres-pagamento:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
     command: sh -c "npx prisma migrate deploy && npm run dev"
 
@@ -73,6 +95,11 @@ services:
     volumes:
       - postgres_pagamento_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app-notificacao:
     build:
@@ -83,8 +110,12 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres-notificacao:5432/appdb
       PORT: 3003
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
     depends_on:
-      - postgres-notificacao
+      postgres-notificacao:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
     command: sh -c "npx prisma migrate deploy && npm run dev"
 
@@ -98,9 +129,15 @@ services:
     volumes:
       - postgres_notificacao_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_service_data:
   postgres_cardapio_data:
   postgres_pagamento_data:
   postgres_notificacao_data:
+  rabbitmq_data:

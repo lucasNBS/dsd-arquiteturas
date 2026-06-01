@@ -1,6 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import { paymentRoutes } from "./routes/payment";
+import { rabbitMQ } from "./lib/rabbitmq";
 
 const app = Fastify({
   logger: true,
@@ -16,6 +17,8 @@ app.register(paymentRoutes);
 
 const start = async () => {
   try {
+    await rabbitMQ.connect();
+
     await app.listen({
       port: Number(process.env.PORT) ?? 3002,
       host: "0.0.0.0",
