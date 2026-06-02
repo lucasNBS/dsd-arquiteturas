@@ -10,6 +10,7 @@ export interface Order {
   table_number: number;
   status: string;
   total: number;
+  observation: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -36,12 +37,13 @@ export class PedidoRepository {
         id,
         table_number,
         status,
-        total
+        total,
+        observation
       )
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-      [orderId, data.table, "pending", 0]
+      [orderId, data.table, "pending", 0, data.observation ?? null]
     );
 
     for (const item of data.items) {
