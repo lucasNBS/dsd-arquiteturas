@@ -18,6 +18,7 @@ export class PrismaOrdersRepository implements OrdersRepository {
       data: {
         table: data.table,
         items: data.items,
+        observation: data.observation,
       },
     });
   }
@@ -47,6 +48,7 @@ export class PrismaOrdersRepository implements OrdersRepository {
         table: order.table,
         items: order.items,
         status: order.status,
+        observation: order.observation,
       },
     });
   }

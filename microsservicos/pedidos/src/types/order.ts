@@ -5,5 +5,6 @@ export interface Order {
   table: number;
   items: string[];
   status: OrderStatus;
+  observation?: string;
   createdAt: Date;
 }

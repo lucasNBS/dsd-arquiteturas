@@ -17,5 +17,6 @@ model Order {
   table Int
   status OrderStatus @default(PENDING)
   items String[]
+  observation String?
   createdAt DateTime @default(now())
 }
