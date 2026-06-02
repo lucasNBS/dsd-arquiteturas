@@ -16,6 +16,7 @@ export interface Order {
   items: OrderItem[];
   amount: number;
   status: OrderStatus;
+  note: string | null;
   createdAt: Date;
 }
 
@@ -39,6 +40,7 @@ async function mapRow(row: any): Promise<Order> {
     items: await loadItems(row.id),
     amount: Number(row.amount),
     status: row.status,
+    note: row.note ?? null,
     createdAt: new Date(row.created_at),
   };
 }
@@ -46,6 +48,7 @@ async function mapRow(row: any): Promise<Order> {
 export async function createOrder(data: {
   table: number;
   items: { menuItemId: string; quantity: number }[];
+  note?: string;
 }): Promise<Order> {
   const items: OrderItem[] = [];
 
@@ -79,6 +82,7 @@ export async function createOrder(data: {
     items,
     amount,
     status: "PENDING",
+    note: data.note ?? null,
     createdAt: new Date(),
   };
 
@@ -86,9 +90,9 @@ export async function createOrder(data: {
   try {
     await client.query("BEGIN");
     await client.query(
-      `INSERT INTO orders (id, table_num, amount, status, created_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [order.id, order.table, order.amount, order.status, order.createdAt],
+      `INSERT INTO orders (id, table_num, amount, status, note, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [order.id, order.table, order.amount, order.status, order.note, order.createdAt],
     );
     for (const item of order.items) {
       await client.query(

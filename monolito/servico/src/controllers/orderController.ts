@@ -12,7 +12,11 @@ interface OrderLineInput {
 }
 
 export async function create(request: FastifyRequest, reply: FastifyReply) {
-  const body = request.body as { table?: number; items?: OrderLineInput[] };
+  const body = request.body as {
+    table?: number;
+    items?: OrderLineInput[];
+    note?: string;
+  };
 
   if (
     typeof body.table !== "number" ||
@@ -42,7 +46,11 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
   }
 
   try {
-    const order = await createOrder({ table: body.table, items: lines });
+    const order = await createOrder({
+      table: body.table,
+      items: lines,
+      note: body.note,
+    });
     return reply.status(201).send(order);
   } catch (err) {
     return reply.status(400).send({ message: (err as Error).message });

@@ -30,6 +30,7 @@ export async function initDatabase(): Promise<void> {
       table_num   INTEGER NOT NULL,
       amount      NUMERIC NOT NULL,
       status      TEXT    NOT NULL,
+      note        TEXT,
       created_at  TIMESTAMPTZ NOT NULL
     );
 
