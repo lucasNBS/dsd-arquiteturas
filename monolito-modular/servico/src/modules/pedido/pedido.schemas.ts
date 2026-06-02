@@ -8,6 +8,7 @@ export const createOrderItemSchema = z.object({
 export const createOrderSchema = z.object({
   table: z.number().int().positive(),
   items: z.array(createOrderItemSchema).min(1),
+  observation: z.string().optional(),
 });
 
 export const updateOrderStatusSchema = z.object({

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS pedido.orders (
   table_number INTEGER NOT NULL,
   status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
   total NUMERIC(10,2) NOT NULL DEFAULT 0,
+  observation TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
